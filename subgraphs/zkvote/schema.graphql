@@ -1,0 +1,33 @@
+type Account @entity {
+  id: ID!
+  balance: BigInt!
+  tokens: [VotingPassToken!]! @derivedFrom(field: "owner")
+}
+
+type VotingPassToken @entity {
+  id: ID!
+  tokenId: BigInt!
+  owner: Account!
+  contractAddress: Bytes!
+  mintTxHash: Bytes!
+  mintedAtBlock: BigInt!
+  mintedAtTimestamp: BigInt!
+  chainId: BigInt!
+}
+
+type Proposal @entity {
+  id: ID!
+  proposalNumber: BigInt!
+  creator: Bytes!
+  nftContract: Bytes!
+  snapshotBlock: BigInt!
+  startTime: BigInt!
+  endTime: BigInt!
+  metadataHash: Bytes!
+  metadataUri: String!
+  optionsHash: Bytes!
+  groupRoot: Bytes!
+  txHash: Bytes
+  createdAtBlock: BigInt!
+  createdAtTimestamp: BigInt!
+}

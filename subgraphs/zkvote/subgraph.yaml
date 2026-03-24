@@ -1,0 +1,47 @@
+specVersion: 1.1.0
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: VotingPass
+    network: horizen-testnet
+    source:
+      address: "0x8e61e30B3b3e7A7e8E2d76F2c246A69eEeFb8504"
+      abi: VotingPass
+      startBlock: 12693716
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Account
+        - VotingPassToken
+      abis:
+        - name: VotingPass
+          file: ./abis/VotingPass.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/voting-pass.ts
+  - kind: ethereum
+    name: ProposalRegistry
+    network: horizen-testnet
+    source:
+      address: "0x5B29F14596c61d9874Fe136f317C95EFd2caACB4"
+      abi: ProposalRegistry
+      startBlock: 12746760
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Proposal
+      abis:
+        - name: ProposalRegistry
+          file: ./abis/ProposalRegistry.json
+      eventHandlers:
+        - event: ProposalCreated(indexed uint256,indexed address,indexed address)
+          handler: handleProposalCreated
+        - event: GroupRootSet(indexed uint256,bytes32)
+          handler: handleGroupRootSet
+      file: ./src/proposal-registry.ts

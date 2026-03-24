@@ -1,0 +1,32 @@
+node_modules/
+.next/
+dist/
+coverage/
+*.log
+.DS_Store
+*.tsbuildinfo
+.worktrees/
+
+# Ignore all real env files, but keep shareable examples.
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+
+# Keep local docs and tests out of remote pushes.
+docs/
+**/test/
+**/*.test.ts
+**/*.test.tsx
+**/*.test.js
+**/*.test.jsx
+**/*.spec.ts
+**/*.spec.tsx
+**/*.spec.js
+**/*.spec.jsx
+
+# Ignore generated build artifacts.
+contracts/cache/
+contracts/out/
+subgraphs/**/build/
+subgraphs/**/generated/

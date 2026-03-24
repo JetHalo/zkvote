@@ -1,0 +1,19 @@
+{
+  "name": "zkvote",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web",
+    "apps/zkvotefront/zkvote-console"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace zkvote-console",
+    "build": "npm run build --workspace zkvote-console",
+    "start": "npm run start --workspace zkvote-console",
+    "dev:legacy": "npm run dev --workspace apps/web",
+    "build:legacy": "npm run build --workspace apps/web",
+    "start:legacy": "npm run start --workspace apps/web",
+    "check:structure": "bash scripts/e2e/check-structure.sh",
+    "check:locks": "bash scripts/e2e/check-doc-locks.sh"
+  }
+}
