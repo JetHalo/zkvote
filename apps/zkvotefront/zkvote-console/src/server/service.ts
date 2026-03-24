@@ -171,6 +171,56 @@ export function createVotingService(deps: {
     }
   }
 
+  async function ensureStoredProposalRecord(id: string): Promise<ProposalRecord | null> {
+    const existing = await repository.getProposalById(id);
+    if (existing) {
+      return existing;
+    }
+
+    if (!indexer) {
+      return null;
+    }
+
+    const chainProposal = await indexer.getProposalById(id);
+    if (!chainProposal) {
+      return null;
+    }
+
+    const recoveredMetadata = await recoverChainProposalMetadata(chainProposal, undefined);
+    const options = recoveredMetadata?.options ?? [];
+
+    if (options.length === 0) {
+      throw new Error("PROPOSAL_METADATA_UNAVAILABLE");
+    }
+
+    try {
+      return await repository.createProposal({
+        proposalId: chainProposal.id,
+        title: recoveredMetadata?.title ?? `Proposal ${chainProposal.id}`,
+        description:
+          recoveredMetadata?.description ??
+          "On-chain proposal detected, but metadata is unavailable in the application database.",
+        nftContract: chainProposal.nftContract,
+        snapshotBlock: chainProposal.snapshotBlock,
+        metadataHash: chainProposal.metadataHash,
+        metadataUri: chainProposal.metadataUri,
+        startTime: chainProposal.startTime,
+        endTime: chainProposal.endTime,
+        options,
+        optionsHash: chainProposal.optionsHash,
+        groupRoot: chainProposal.groupRoot,
+        txHash: chainProposal.txHash,
+        creator: chainProposal.creator
+      });
+    } catch (error) {
+      if (error instanceof Error && /duplicate|unique|already exists/i.test(error.message)) {
+        return repository.getProposalById(id);
+      }
+
+      throw error;
+    }
+  }
+
   async function listPassesWithIndexer(walletAddress?: string | null): Promise<VotingPassRecord[]> {
     const [storedPasses, chainPasses] = await Promise.all([
       repository.listPasses(walletAddress),
@@ -301,10 +351,20 @@ export function createVotingService(deps: {
           throw new Error("NFT_PASS_REQUIRED");
         }
 
+        const proposal = await ensureStoredProposalRecord(proposalId);
+        if (!proposal) {
+          throw new Error("PROPOSAL_NOT_FOUND");
+        }
+
         return repository.registerMembership(proposalId, walletAddress, identityCommitment);
       })();
     },
     async submitProof(payload: ProofSubmitRequest): Promise<StoredProofRecord> {
+      const proposal = await ensureStoredProposalRecord(payload.proposalId);
+      if (!proposal) {
+        throw new Error("PROPOSAL_NOT_FOUND");
+      }
+
       const submission = verifier ? await verifier.submitProof(payload) : null;
       const proof = await repository.submitProof(payload, submission);
 
